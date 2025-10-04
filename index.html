@@ -1,244 +1,112 @@
+
 <!DOCTYPE html>
-<html lang="es">
+<html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DevAnder.Front‑End — Mejorado</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
-  <style>
-    :root{
-      --bg-top:#0a0c12;
-      --bg-bottom:#1b2735;
-      --accent:#ffa500;
-      --rain-speed:1; /* multiplicador (1 = normal) */
-      --max-fallers:300; /* tope para no saturar el DOM */
-    }
+    <meta charset="UTF-8">
+    <title>Frases com Tempos Diferentes</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            font-family: Arial, sans-serif;
+        }
 
-    /* Reset básico y fuente */
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      color:#fff;
-      font-family:'Press Start 2P', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(120% 90% at 50% 100%, var(--bg-bottom) 0%, var(--bg-top) 70%);
-      overflow:hidden; /* evita scroll durante la lluvia */
-    }
-
-    /* Contenedor del cielo para aislar z-index */
-    .sky{position:fixed; inset:0; z-index:0; overflow:hidden}
-
-    /* Estrellas: mejor rendimiento con sombras y pocas capas */
-    .stars{position:absolute; inset:0; pointer-events:none}
-    .star{position:absolute; border-radius:50%; background:#fff; opacity:.75; filter:drop-shadow(0 0 2px #fff)}
-    .star.twinkle{animation: twinkle 3.5s ease-in-out infinite;}
-    @keyframes twinkle{ 0%,100%{opacity:.25} 50%{opacity:.95} }
-
-    /* Mensaje central */
-    .static{
-      position:fixed; inset:0; display:grid; place-items:center; z-index:3; pointer-events:none;
-      text-align:center; letter-spacing:4px; text-shadow:0 0 10px var(--accent), 0 0 24px rgba(255,165,0,.35);
-    }
-    .static h1{ margin:0; font-size: clamp(28px, 6vw, 64px); color:var(--accent); }
-    .static p{ margin:.75rem 0 0; font-size: clamp(10px, 2.2vw, 16px); opacity:.85 }
-
-    /* Lluvia: separa transform de cada animación con contenedores anidados */
-    .drop{ position:absolute; top:-60px; left:0; will-change:transform; pointer-events:none; z-index:2 }
-    .payload{ will-change:transform, filter; filter: drop-shadow(0 0 2px #fff); }
-    .payload.text{ font-size:24px; white-space:nowrap }
-    .payload.emoji{ font-family: Arial, 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif !important; font-size:32px }
-
-    /* Animaciones */
-    @keyframes fall {
-      from { transform: translateY(-60px) rotate(-6deg) scale(1); opacity:0 }
-      8%  { opacity:1; transform: translateY(0) rotate(6deg) scale(1.08) }
-      60% { transform: translateY(60vh) rotate(-4deg) scale(1.04) }
-      to   { transform: translateY(102vh) rotate(8deg) scale(1); opacity:1 }
-    }
-    @keyframes wiggle {
-      0%,100% { transform: translateX(0) }
-      20% { transform: translateX(-12px) }
-      40% { transform: translateX(12px) }
-      60% { transform: translateX(-10px) }
-      80% { transform: translateX(10px) }
-    }
-
-    /* Panel de controles accesible */
-    .controls{
-      position:fixed; top:12px; left:12px; z-index:5;
-      display:flex; flex-wrap:wrap; gap:8px; align-items:center;
-      background:rgba(10,12,18,.6); border:1px solid rgba(255,255,255,.12);
-      backdrop-filter: blur(6px); padding:10px 12px; border-radius:14px;
-      box-shadow:0 6px 18px rgba(0,0,0,.35);
-    }
-    .controls button, .controls input[type="range"]{
-      font: inherit; color:#fff; background:transparent; border:1px solid rgba(255,255,255,.25);
-      padding:8px 10px; border-radius:12px; cursor:pointer; min-width:44px; min-height:44px
-    }
-    .controls button:hover{ border-color:#fff }
-    .controls .label{ font-size:12px; opacity:.8 }
-    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0 }
-
-    /* Respeta preferencias del usuario */
-    @media (prefers-reduced-motion: reduce){
-      :root{ --rain-speed:.65 }
-      .drop, .star.twinkle{ animation-duration: 1ms !important; animation-iteration-count: 1 !important }
-    }
-  </style>
+        #frase {
+            font-size: 2rem;
+            text-align: center;
+            max-width: 80%;
+            font-family: Blippo, fantasy;
+            color: #f8f8f8;
+        }
+    </style>
 </head>
+
 <body>
-  <div class="sky" aria-hidden="true">
-    <div class="stars" id="stars"></div>
-  </div>
+    <audio id="meuAudio" src="Vídeo-sem-título.mp3"></audio>
+    <div id="frase">Carregando...</div>
 
-  <div class="static" aria-live="polite">
-    <div>
-      <h1>TE AMO</h1>
-      <p>💖 Eres mi universo 💖</p>
-    </div>
-  </div>
+    <script>
+        document.getElementById('meuAudio').play();
+        const frases = [
+            { texto: "...", duracao: 1750 },
+            { texto: "I", duracao: 350 },
+            { texto: "wanna", duracao: 400 },
+            { texto: "da-", duracao: 400 },
+            { texto: "I", duracao: 350 },
+            { texto: "wanna", duracao: 400 },
+            { texto: "dance", duracao: 400 },
+            { texto: "in", duracao: 200 },
+            { texto: "the", duracao: 200 },
+            { texto: "lights", duracao: 800 },
+            { texto: "...", duracao: 500 },
+            
+            { texto: "I", duracao: 300 },
+            { texto: "wanna", duracao: 400 },
+            { texto: "ro-", duracao: 300 },
+            { texto: "I", duracao: 300 },
+            { texto: "wanna", duracao: 400 },
+            { texto: "rock", duracao: 400 },
+            { texto: "your", duracao: 500 },    
+            { texto: "body", duracao: 1150 },
+            
+            { texto: "I", duracao: 300 },
+            { texto: "wanna", duracao: 400 },
+            { texto: "go", duracao: 300 },
+            { texto: "I", duracao: 300 },
+            { texto: "wanna", duracao: 400 },
+            { texto: "go", duracao: 300 },
+            { texto: "for", duracao: 350 },
+            { texto: "a", duracao: 300 },
+            { texto: "ride", duracao: 800 },
+            { texto: "...", duracao: 400 },
 
-  <div class="controls" role="group" aria-label="Controles de música y animación">
-    <button id="btn-music" aria-pressed="false" aria-label="Reproducir música">▶️ Música</button>
-    <button id="btn-mute" aria-pressed="false" aria-label="Silenciar música">🔈</button>
-    <label class="label" for="vol">Vol</label>
-    <input id="vol" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volumen" />
-    <label class="label" for="speed">Vel</label>
-    <input id="speed" type="range" min="0.6" max="2" step="0.05" value="1" aria-label="Velocidad de caída" />
-    <button id="btn-toggle-rain" aria-pressed="true" aria-label="Pausar lluvia">⏸️ Lluvia</button>
-  </div>
+            { texto: "Hop", duracao: 400 },
+            { texto: "in", duracao: 250 },
+            { texto: "the", duracao: 250 },
+            { texto: "music", duracao: 500 },
+            { texto: "and", duracao: 350 },
+            { texto: "rock", duracao: 450 },
+            { texto: "your", duracao: 500 },
+            { texto: "body", duracao: 700 },
+            { texto: "right", duracao: 400 },
 
-  <audio id="musica" src="mucha.mp3" preload="auto" loop></audio>
+            { texto: "Rock", duracao: 300 },
+            { texto: "that", duracao: 200 },
+            { texto: "body", duracao: 300 },
+            { texto: "come on", duracao: 250 },
+            { texto: "come on", duracao: 150 },
+            { texto: "come on come on", duracao: 250 },
+            { texto: "come on come on", duracao: 150 },
+            { texto: "rock", duracao: 300 },
+            { texto: "that", duracao: 200 },
+            { texto: "body", duracao: 300 },
+            { texto: "rock", duracao: 300 },
+            { texto: "that", duracao: 200 },
+            { texto: "body", duracao: 500 },
+            { texto: "...", duracao: 200000 }
+        ];
 
-  <script>
-    // ======= Palabras y emojis =======
-    const palabras = [
-      'GUAPA','PRECIOSA','PERFECTA','LINDA','BONITA','HERMOSA','BELLA','MI SOL','MI ESTRELLA','TE QUIERO','TE ADORO','TE EXTRAÑO','TE AMO','TE AMO MUCHO','TE AMO MÁS QUE A NADIE','ERES MI VIDA','ERES MI TODO','ERES MI MUNDO','ERES MI SUERTE','ERES MI DESTINO','ERES MI INSPIRACIÓN','ERES MI ALEGRÍA','ERES MI RAZÓN DE SER','ERES MI SUEÑO HECHO REALIDAD',
-      '❤️','🌸','🌟','💖','💐','✨','⭐','💕','💞','💝','🌙','🌈','🪽','🌻','🎇','🫶'
-    ];
 
-    // ======= Utilidades =======
-    const rand = (min, max) => Math.random() * (max - min) + min;
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const isEmoji = (str) => /[\u2190-\u2BFF\u2000-\u3300\uD83C-\uDBFF\uDC00-\uDFFF]/.test(str);
-    const niceColor = () => `hsl(${Math.floor(rand(0,360))}deg ${Math.floor(rand(60,95))}% ${Math.floor(rand(60,80))}%)`;
+        let index = 0;
+        const elemento = document.getElementById("frase");
 
-    // ======= Estrellas =======
-    const starsRoot = document.getElementById('stars');
-    (function createStars(count=160){
-      const frag = document.createDocumentFragment();
-      for(let i=0;i<count;i++){
-        const s = document.createElement('div');
-        s.className = 'star' + (Math.random() < 0.6 ? ' twinkle' : '');
-        const size = rand(1,2.4);
-        s.style.width = s.style.height = size + 'px';
-        s.style.top = rand(0,100) + 'vh';
-        s.style.left = rand(0,100) + 'vw';
-        s.style.animationDelay = rand(0,3) + 's';
-        frag.appendChild(s);
-      }
-      starsRoot.appendChild(frag);
-    })();
+        function mostrarFrase() {
+            const { texto, duracao } = frases[index];
+            elemento.textContent = texto;
 
-    // ======= Lluvia =======
-    let raining = true;
-    let fallers = 0;
-    const MAX_FALLERS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--max-fallers')) || 300;
+            setTimeout(() => {
+                index = (index + 1) % frases.length;
+                mostrarFrase();
+            }, duracao);
+        }
 
-    function createFaller(){
-      if(!raining || fallers >= MAX_FALLERS) return;
-
-      // Decide contenido (palabra completa 40% o letra/emoji 60%)
-      const base = pick(palabras);
-      let content;
-      if(Math.random() < 0.4 || isEmoji(base)){
-        content = base;
-      } else {
-        const chars = base.replace(/\s/g, '').split('');
-        content = pick(chars);
-      }
-
-      // Nodo exterior controla caída (transform Y/rot/scale)
-      const drop = document.createElement('div');
-      drop.className = 'drop';
-      drop.style.left = rand(0, 98) + 'vw';
-
-      const payload = document.createElement('div');
-      payload.className = 'payload ' + (isEmoji(content) ? 'emoji' : 'text');
-      payload.textContent = content;
-      payload.style.color = niceColor();
-
-      // Wiggle lateral en el payload (transform X)
-      const fallDur = (rand(1.2, 2.6) / (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rain-speed')) || 1)).toFixed(2);
-      drop.style.animation = `fall ${fallDur}s linear forwards`;
-      payload.style.animation = `wiggle ${rand(1, 1.6).toFixed(2)}s ease-in-out ${rand(0, 0.8).toFixed(2)}s infinite`;
-
-      drop.appendChild(payload);
-      document.body.appendChild(drop);
-      fallers++;
-
-      drop.addEventListener('animationend', () => {
-        drop.remove();
-        fallers = Math.max(0, fallers - 1);
-      }, { once:true });
-    }
-
-    // Ritmo de generación: usa rAF para suavidad
-    let last = performance.now();
-    function tick(now){
-      const speed = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rain-speed')) || 1;
-      const interval = 40 / speed; // menor = más lluvia
-      if(now - last >= interval){
-        createFaller();
-        last = now;
-      }
-      requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-
-    // ======= Música y controles =======
-    const audio = document.getElementById('musica');
-    const btnMusic = document.getElementById('btn-music');
-    const btnMute = document.getElementById('btn-mute');
-    const rangeVol = document.getElementById('vol');
-    const rangeSpeed = document.getElementById('speed');
-    const btnToggleRain = document.getElementById('btn-toggle-rain');
-
-    // Desbloqueo iOS
-    const unlock = () => { audio.play().then(()=>audio.pause()).catch(()=>{}); document.removeEventListener('touchstart', unlock); };
-    document.addEventListener('touchstart', unlock, {passive:true});
-
-    btnMusic.addEventListener('click', async () => {
-      try{
-        if(audio.paused){ await audio.play(); btnMusic.textContent = '⏹️ Parar'; btnMusic.setAttribute('aria-pressed','true'); }
-        else { audio.pause(); audio.currentTime = 0; btnMusic.textContent = '▶️ Música'; btnMusic.setAttribute('aria-pressed','false'); }
-      }catch(e){ console.warn('Reproducción bloqueada por el navegador:', e); }
-    });
-
-    btnMute.addEventListener('click', () => {
-      audio.muted = !audio.muted;
-      btnMute.textContent = audio.muted ? '🔇' : '🔈';
-      btnMute.setAttribute('aria-pressed', String(audio.muted));
-    });
-
-    rangeVol.addEventListener('input', () => { audio.volume = parseFloat(rangeVol.value); }, {passive:true});
-
-    rangeSpeed.addEventListener('input', () => {
-      const val = parseFloat(rangeSpeed.value) || 1;
-      document.documentElement.style.setProperty('--rain-speed', String(val));
-    }, {passive:true});
-
-    btnToggleRain.addEventListener('click', () => {
-      raining = !raining;
-      btnToggleRain.textContent = raining ? '⏸️ Lluvia' : '▶️ Lluvia';
-      btnToggleRain.setAttribute('aria-pressed', String(raining));
-    });
-
-    // Accesos rápidos
-    document.addEventListener('keydown', (e) => {
-      if(e.key.toLowerCase() === 'm') btnMusic.click();
-      if(e.key.toLowerCase() === 'r') btnToggleRain.click();
-    });
-  </script>
+        mostrarFrase(); 
+    </script>
 </body>
+
 </html>
