@@ -1,112 +1,183 @@
-
-<!DOCTYPE html>
-<html lang="pt-BR">
-
+<!doctype html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Frases com Tempos Diferentes</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #121212;
-            font-family: Arial, sans-serif;
-        }
-
-        #frase {
-            font-size: 2rem;
-            text-align: center;
-            max-width: 80%;
-            font-family: Blippo, fantasy;
-            color: #f8f8f8;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prueba de Audio</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      line-height: 1.5;
+      display: grid;
+      place-items: center;
+      min-height: 100dvh;
+      background: rgba(0,0,0,0.02);
+    }
+    .card {
+      width: min(640px, 92vw);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      background: #fff;
+    }
+    h1 { font-size: 1.25rem; margin: 0 0 0.5rem 0; }
+    p { margin: 0.25rem 0; }
+    .row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-top: 0.75rem; }
+    button {
+      border: 0; border-radius: 999px; padding: 0.6rem 1rem; cursor: pointer;
+      background: #111; color: #fff; font-weight: 600;
+    }
+    .muted-note { font-size: 0.9rem; opacity: 0.8; }
+    .status { margin-top: 0.5rem; font-size: 0.95rem; }
+    audio { width: 100%; margin-top: 0.5rem; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #0b0b0c; }
+      .card { background: #121214; border-color: rgba(255,255,255,0.08); }
+      button { background: #e7e7e7; color: #111; }
+    }
+  </style>
 </head>
-
 <body>
-    <audio id="meuAudio" src="Vídeo-sem-título.mp3"></audio>
-    <div id="frase">Carregando...</div>
+  <main class="card">
+    <h1>Reproductor de audio</h1>
+    <p class="muted-note">El audio intenta iniciar en silencio (requisito de los navegadores). Haz clic en el botón o en cualquier parte para activar el sonido.</p>
 
-    <script>
-        document.getElementById('meuAudio').play();
-        const frases = [
-            { texto: "...", duracao: 1750 },
-            { texto: "I", duracao: 350 },
-            { texto: "wanna", duracao: 400 },
-            { texto: "da-", duracao: 400 },
-            { texto: "I", duracao: 350 },
-            { texto: "wanna", duracao: 400 },
-            { texto: "dance", duracao: 400 },
-            { texto: "in", duracao: 200 },
-            { texto: "the", duracao: 200 },
-            { texto: "lights", duracao: 800 },
-            { texto: "...", duracao: 500 },
-            
-            { texto: "I", duracao: 300 },
-            { texto: "wanna", duracao: 400 },
-            { texto: "ro-", duracao: 300 },
-            { texto: "I", duracao: 300 },
-            { texto: "wanna", duracao: 400 },
-            { texto: "rock", duracao: 400 },
-            { texto: "your", duracao: 500 },    
-            { texto: "body", duracao: 1150 },
-            
-            { texto: "I", duracao: 300 },
-            { texto: "wanna", duracao: 400 },
-            { texto: "go", duracao: 300 },
-            { texto: "I", duracao: 300 },
-            { texto: "wanna", duracao: 400 },
-            { texto: "go", duracao: 300 },
-            { texto: "for", duracao: 350 },
-            { texto: "a", duracao: 300 },
-            { texto: "ride", duracao: 800 },
-            { texto: "...", duracao: 400 },
+    <!--
+      IMPORTANTE:
+      - La primera fuente usa el nombre con acentos: "Vídeo-sem-título.mp3".
+      - La segunda es un fallback por si lo renombras sin acentos: "video-sem-titulo.mp3".
+      - Deja ambos si no estás seguro; el navegador usará la que cargue correctamente.
+    -->
+    <audio id="meuAudio" preload="auto" controls autoplay muted>
+      <source src="Vídeo-sem-título.mp3" type="audio/mpeg" />
+      <source src="video-sem-titulo.mp3" type="audio/mpeg" />
+      Tu navegador no soporta la etiqueta <code>audio</code>.
+    </audio>
 
-            { texto: "Hop", duracao: 400 },
-            { texto: "in", duracao: 250 },
-            { texto: "the", duracao: 250 },
-            { texto: "music", duracao: 500 },
-            { texto: "and", duracao: 350 },
-            { texto: "rock", duracao: 450 },
-            { texto: "your", duracao: 500 },
-            { texto: "body", duracao: 700 },
-            { texto: "right", duracao: 400 },
+    <div class="row">
+      <button id="unmuteBtn" type="button">🔊 Activar sonido</button>
+      <button id="playPauseBtn" type="button">⏯️ Reproducir / Pausar</button>
+      <button id="muteToggleBtn" type="button">🤫 Silenciar / Sonar</button>
+    </div>
 
-            { texto: "Rock", duracao: 300 },
-            { texto: "that", duracao: 200 },
-            { texto: "body", duracao: 300 },
-            { texto: "come on", duracao: 250 },
-            { texto: "come on", duracao: 150 },
-            { texto: "come on come on", duracao: 250 },
-            { texto: "come on come on", duracao: 150 },
-            { texto: "rock", duracao: 300 },
-            { texto: "that", duracao: 200 },
-            { texto: "body", duracao: 300 },
-            { texto: "rock", duracao: 300 },
-            { texto: "that", duracao: 200 },
-            { texto: "body", duracao: 500 },
-            { texto: "...", duracao: 200000 }
-        ];
+    <p id="status" class="status">Cargando audio…</p>
+  </main>
 
+  <script>
+    (function () {
+      const audio = document.getElementById('meuAudio');
+      const statusEl = document.getElementById('status');
+      const unmuteBtn = document.getElementById('unmuteBtn');
+      const playPauseBtn = document.getElementById('playPauseBtn');
+      const muteToggleBtn = document.getElementById('muteToggleBtn');
 
-        let index = 0;
-        const elemento = document.getElementById("frase");
+      // Utilidad para mensajes
+      function setStatus(msg) { statusEl.textContent = msg; }
 
-        function mostrarFrase() {
-            const { texto, duracao } = frases[index];
-            elemento.textContent = texto;
-
-            setTimeout(() => {
-                index = (index + 1) % frases.length;
-                mostrarFrase();
-            }, duracao);
+      // Intento de autoplay en silencio al cargar
+      async function tryAutoplayMuted() {
+        try {
+          await audio.play();
+          setStatus('Reproduciendo (silenciado por política de autoplay)…');
+        } catch (e) {
+          // Si falla, quedará esperando interacción del usuario
+          setStatus('Autoplay bloqueado hasta tu interacción. Haz clic para activar sonido.');
         }
+      }
 
-        mostrarFrase(); 
-    </script>
+      // Al primer gesto del usuario, intentamos activar con sonido
+      async function startOnce() {
+        audio.muted = false;
+        try {
+          await audio.play();
+          setStatus('Reproduciendo con sonido ✅');
+        } catch (e) {
+          console.warn(e);
+          setStatus('No pude reproducir automáticamente. Usa los botones de arriba.');
+        } finally {
+          window.removeEventListener('click', startOnce);
+          window.removeEventListener('keydown', startOnce);
+          window.removeEventListener('touchstart', startOnce);
+        }
+      }
+
+      // Botones
+      unmuteBtn.addEventListener('click', async () => {
+        audio.muted = false;
+        try {
+          await audio.play();
+          setStatus('Reproduciendo con sonido ✅');
+        } catch (e) {
+          console.warn(e);
+          setStatus('No se pudo iniciar la reproducción. Revisa la consola del navegador.');
+        }
+      });
+
+      playPauseBtn.addEventListener('click', async () => {
+        try {
+          if (audio.paused) {
+            await audio.play();
+            setStatus(audio.muted ? 'Reproduciendo (silenciado)…' : 'Reproduciendo con sonido ✅');
+          } else {
+            audio.pause();
+            setStatus('Pausado ⏸️');
+          }
+        } catch (e) {
+          console.warn(e);
+          setStatus('No se pudo cambiar el estado de reproducción.');
+        }
+      });
+
+      muteToggleBtn.addEventListener('click', () => {
+        audio.muted = !audio.muted;
+        setStatus(audio.muted ? 'Silenciado 🤫' : 'Con sonido 🔊');
+      });
+
+      // Mensajes de error más claros
+      audio.addEventListener('error', () => {
+        let msg = 'Error cargando el audio.';
+        const err = audio.error;
+        if (err) {
+          switch (err.code) {
+            case MediaError.MEDIA_ERR_ABORTED:
+              msg = 'Carga abortada por el usuario o la página.';
+              break;
+            case MediaError.MEDIA_ERR_NETWORK:
+              msg = 'Fallo de red al descargar el audio (revisa conexión y ruta).';
+              break;
+            case MediaError.MEDIA_ERR_DECODE:
+              msg = 'El archivo no se pudo decodificar (posible corrupción o formato no soportado).';
+              break;
+            case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+              msg = 'Archivo no encontrado o formato no soportado. Verifica que el MP3 esté en la misma carpeta y que el nombre coincida exactamente.';
+              break;
+          }
+        }
+        msg += ' Tip: Si tu archivo se llama “Vídeo-sem-título.mp3” y no carga, prueba renombrarlo a “video-sem-titulo.mp3” y deja ambas <source>.';
+        setStatus(msg);
+      });
+
+      // Estado informativo cuando puede reproducirse
+      audio.addEventListener('canplay', () => {
+        if (audio.muted) {
+          setStatus('Listo para reproducir (silenciado). Haz clic en “Activar sonido”.');
+        } else {
+          setStatus('Listo para reproducir con sonido.');
+        }
+      });
+
+      // Disparadores de “primer gesto”
+      window.addEventListener('click', startOnce, { once: true });
+      window.addEventListener('keydown', startOnce, { once: true });
+      window.addEventListener('touchstart', startOnce, { once: true });
+
+      // Intento inicial
+      tryAutoplayMuted();
+    })();
+  </script>
 </body>
-
 </html>
