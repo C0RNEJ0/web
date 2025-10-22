@@ -3,125 +3,42 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Reproductor con segundos + letra sincronizada</title>
+  <title>Audio + letras</title>
   <style>
+    /* Minimal, como el original: fondo liso y solo el audio + texto grande */
     :root { color-scheme: light dark; }
-    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
     body {
+      display: grid; place-items: center;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-      margin: 0; padding: 2rem; line-height: 1.5;
-      display: grid; place-items: center; min-height: 100dvh;
-      background: rgba(0,0,0,0.02);
     }
-    .card {
-      width: min(820px, 95vw);
-      border: 1px solid rgba(0,0,0,0.1);
-      border-radius: 16px;
-      padding: 1.25rem;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-      background: #fff;
-    }
-    h1 { font-size: 1.25rem; margin: 0 0 0.25rem 0; }
-    p { margin: 0.25rem 0; }
-    audio { width: 100%; margin-top: 0.5rem; }
-    .row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; margin-top: 0.75rem; }
-    button {
-      border: 0; border-radius: 999px; padding: 0.6rem 1rem; cursor: pointer;
-      background: #111; color: #fff; font-weight: 600;
-    }
-    .muted-note { font-size: 0.9rem; opacity: 0.85; }
-    .status { margin-top: 0.5rem; font-size: 0.95rem; }
-    .timer { font-variant-numeric: tabular-nums; font-weight: 600; }
-    .playlist { list-style: none; padding: 0; margin: 1rem 0 0 0; }
-    .track {
-      display: grid; grid-template-columns: 1fr auto; gap: 0.5rem;
-      padding: 0.6rem 0.75rem; border-radius: 12px; cursor: pointer;
-      border: 1px solid rgba(0,0,0,0.08);
-    }
-    .track:hover { background: rgba(0,0,0,0.04); }
-    .track.active { outline: 2px solid #1a73e8; background: rgba(26,115,232,0.08); }
-    .dur { opacity: 0.8; font-variant-numeric: tabular-nums; }
-    .progress-wrap { margin-top: 0.5rem; }
-    .progress {
-      width: 100%; height: 8px; background: rgba(0,0,0,0.08);
-      border-radius: 999px; overflow: hidden; position: relative;
-    }
-    .bar { height: 100%; width: 0%; background: #1a73e8; transition: width 0.08s linear; }
-    .labels { display: flex; justify-content: space-between; margin-top: 0.35rem; font-variant-numeric: tabular-nums; }
-
-    /* Letra / karaoke */
-    .lyrics {
-      margin-top: 1rem;
-      border: 1px dashed rgba(0,0,0,0.2);
-      border-radius: 12px;
-      padding: 1rem;
-      background: rgba(0,0,0,0.03);
-    }
-    .lyric-line {
-      font-size: clamp(1.05rem, 2.5vw, 1.4rem);
-      font-weight: 700;
+    /* Ubicamos el reproductor arriba-izquierda (opcional) */
+    audio { position: fixed; top: 12px; left: 12px; max-width: min(500px, 80vw); }
+    /* Texto de la frase en grande, centrado */
+    #lyric {
       text-align: center;
-      letter-spacing: 0.3px;
-    }
-    .lyric-sub {
-      opacity: 0.8;
-      font-size: 0.95rem;
-      text-align: center;
-      margin-top: 0.25rem;
-      font-variant-numeric: tabular-nums;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      body { background: #0b0b0c; }
-      .card { background: #121214; border-color: rgba(255,255,255,0.08); }
-      button { background: #e7e7e7; color: #111; }
-      .progress { background: rgba(255,255,255,0.12); }
-      .bar { background: #8ab4f8; }
-      .lyrics {
-        background: rgba(255,255,255,0.04);
-        border-color: rgba(255,255,255,0.12);
-      }
+      font-weight: 800;
+      letter-spacing: .3px;
+      font-size: clamp(28px, 8vw, 80px);
+      line-height: 1.1;
+      padding: 16px;
+      user-select: none;
     }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>Reproductor de audio</h1>
-    <p class="muted-note">Autoplay con sonido está bloqueado por el navegador; inicia en silencio. Usa “Activar sonido” o cualquier clic/tecla.</p>
+  <!-- Reproductor tal cual, sin extras -->
+  <audio id="meuAudio" preload="auto" controls>
+    <source src="Vídeo-sem-título.mp3" type="audio/mpeg" />
+    <source src="video-sem-titulo.mp3" type="audio/mpeg" />
+    Tu navegador no soporta la etiqueta <code>audio</code>.
+  </audio>
 
-    <!-- Reproductor principal (usa el id 'meuAudio' como en tu snippet) -->
-    <audio id="meuAudio" preload="auto" controls autoplay muted></audio>
-
-    <div class="row">
-      <button id="unmuteBtn" type="button">🔊 Activar sonido</button>
-      <button id="playPauseBtn" type="button">⏯️ Reproducir / Pausar</button>
-      <button id="muteToggleBtn" type="button">🤫 Silenciar / Sonar</button>
-    </div>
-
-    <!-- Barra de progreso + tiempos en mm:ss y en segundos -->
-    <div class="progress-wrap">
-      <div class="progress"><div id="bar" class="bar"></div></div>
-      <div class="labels">
-        <span>Actual: <span id="curMMSS" class="timer">00:00</span> (<span id="curS">0</span> s)</span>
-        <span>Total: <span id="totMMSS" class="timer">00:00</span> (<span id="totS">0</span> s)</span>
-      </div>
-    </div>
-
-    <p id="status" class="status">Cargando audio…</p>
-
-    <!-- Lista de canciones con duración (mm:ss y segundos) -->
-    <h2 style="margin-top:1rem;font-size:1.05rem">Lista</h2>
-    <ul id="playlist" class="playlist"></ul>
-
-    <!-- Letra sincronizada -->
-    <section class="lyrics">
-      <div id="lyricLine" class="lyric-line">—</div>
-      <div id="lyricSub" class="lyric-sub">00:00 — 00:00 (0 s)</div>
-    </section>
-  </main>
+  <!-- Solo el texto de la frase actual -->
+  <div id="lyric">…</div>
 
   <script>
-    // ======= Tu arreglo de frases (duracao en milisegundos) =======
+    // === Tu arreglo de frases (duracao en milisegundos) ===
     const frases = [
       { texto: "...", duracao: 1750 },
       { texto: "I", duracao: 350 },
@@ -181,253 +98,58 @@
       { texto: "...", duracao: 200000 }
     ];
 
-    // ======= Utilidades de tiempo =======
-    function pad(n) { return String(Math.floor(n)).padStart(2, '0'); }
-    function toMMSS(secs) {
-      if (!isFinite(secs) || secs < 0) return '00:00';
-      const m = Math.floor(secs / 60);
-      const s = Math.floor(secs % 60);
-      return pad(m) + ':' + pad(s);
-    }
-    function clamp01(x) { return Math.max(0, Math.min(1, x)); }
-
-    // ======= Playlist =======
-    const tracks = [
-      {
-        title: 'Vídeo sem título',
-        sources: ['Vídeo-sem-título.mp3', 'video-sem-titulo.mp3'],
-        duration: NaN,
-        resolvedSrc: null
-      }
-    ];
-
-    // ======= Elementos =======
+    // === Referencias ===
     const audio = document.getElementById('meuAudio');
-    const statusEl = document.getElementById('status');
-    const unmuteBtn = document.getElementById('unmuteBtn');
-    const playPauseBtn = document.getElementById('playPauseBtn');
-    const muteToggleBtn = document.getElementById('muteToggleBtn');
-    const playlistEl = document.getElementById('playlist');
-    const bar = document.getElementById('bar');
-    const curMMSS = document.getElementById('curMMSS');
-    const curS    = document.getElementById('curS');
-    const totMMSS = document.getElementById('totMMSS');
-    const totS    = document.getElementById('totS');
+    const lyric = document.getElementById('lyric');
 
-    const lyricLine = document.getElementById('lyricLine');
-    const lyricSub  = document.getElementById('lyricSub');
+    // === Intento de reproducir como en tu original ===
+    audio.play().catch(() => {
+      // Si el navegador bloquea autoplay, lo intentamos al primer gesto:
+      const once = async () => {
+        try { await audio.play(); } catch {}
+        window.removeEventListener('click', once);
+        window.removeEventListener('keydown', once);
+        window.removeEventListener('touchstart', once);
+      };
+      window.addEventListener('click', once, { once: true });
+      window.addEventListener('keydown', once, { once: true });
+      window.addEventListener('touchstart', once, { once: true });
+    });
 
-    function setStatus(msg) { if (statusEl) statusEl.textContent = msg; }
-
-    // ======= Letra sincronizada (pre-cálculo) =======
-    const cueStartMs = []; // inicio de cada frase en ms
+    // === Precalcular inicios (ms) para cada frase ===
+    const cueStartMs = [];
     (function buildCues(){
       let acc = 0;
       for (const f of frases) { cueStartMs.push(acc); acc += (Number(f.duracao) || 0); }
     })();
-    const totalLyricsMs = cueStartMs.length ? cueStartMs[cueStartMs.length - 1] + (Number(frases.at(-1).duracao)||0) : 0;
+    const totalLyricsMs = cueStartMs.length
+      ? cueStartMs[cueStartMs.length - 1] + (Number(frases.at(-1).duracao) || 0)
+      : 0;
 
+    // Buscar índice de frase para un tiempo dado (ms)
     function findPhraseIndex(tMs) {
-      // Busca el último cue cuyo inicio <= tMs
       let i = 0;
-      // Como la lista no es enorme, un lineal es suficiente; si quisieras, cambia a binaria.
       for (let k = 0; k < cueStartMs.length; k++) {
         if (cueStartMs[k] <= tMs) i = k; else break;
       }
       return i;
     }
 
-    function updateLyricsDisplay(tMs) {
+    function updateLyric(tMs) {
       const i = findPhraseIndex(tMs);
-      const start = cueStartMs[i] || 0;
-      const end = (i < cueStartMs.length - 1) ? cueStartMs[i + 1] : totalLyricsMs;
-      const segStart = start / 1000;
-      const segEnd   = end   / 1000;
-
-      lyricLine.textContent = frases[i]?.texto ?? '—';
-      lyricSub.textContent  = `${toMMSS(segStart)} — ${toMMSS(segEnd)} (${Math.max(0, Math.round(segEnd - segStart))} s)`;
+      lyric.textContent = frases[i]?.texto ?? '…';
     }
 
-    // ======= UI Playlist =======
-    function renderPlaylist(activeIndex = 0) {
-      playlistEl.innerHTML = '';
-      tracks.forEach((t, i) => {
-        const li = document.createElement('li');
-        li.className = 'track' + (i === activeIndex ? ' active' : '');
-        li.dataset.index = i;
-
-        const title = document.createElement('div');
-        title.textContent = t.title;
-
-        const dur = document.createElement('div');
-        dur.className = 'dur';
-        const d = t.duration;
-        dur.textContent = isFinite(d) ? `${toMMSS(d)} (${Math.round(d)} s)` : '—:— (… s)';
-
-        li.appendChild(title);
-        li.appendChild(dur);
-        li.addEventListener('click', async () => {
-          document.querySelectorAll('.track').forEach(el => el.classList.remove('active'));
-          li.classList.add('active');
-          await loadTrack(i, /*autoplay*/ true);
-        });
-        playlistEl.appendChild(li);
-      });
-    }
-
-    function resolveSrcForTrack(track) {
-      return new Promise((resolve) => {
-        if (track.resolvedSrc) return resolve(track.resolvedSrc);
-        const candidates = [...track.sources];
-        const test = new Audio(); test.preload = 'metadata';
-
-        const tryNext = () => {
-          const src = candidates.shift();
-          if (!src) return resolve(null);
-          test.src = src;
-          const onLoaded = () => { cleanup(); track.resolvedSrc = src; resolve(src); };
-          const onError  = () => { cleanup(); tryNext(); };
-          function cleanup(){
-            test.removeEventListener('loadedmetadata', onLoaded);
-            test.removeEventListener('error', onError);
-          }
-          test.addEventListener('loadedmetadata', onLoaded, { once: true });
-          test.addEventListener('error', onError, { once: true });
-          test.load();
-        };
-        tryNext();
-      });
-    }
-
-    async function loadTrack(index, autoplay = false) {
-      const track = tracks[index];
-      setStatus('Cargando audio…');
-      const src = await resolveSrcForTrack(track);
-      if (!src) { setStatus('No se pudo resolver la fuente. Revisa el nombre del archivo.'); return; }
-
-      audio.src = src;
-      audio.load();
-
-      audio.addEventListener('loadedmetadata', () => {
-        updateTotals();
-        setStatus(audio.muted ? 'Listo (silenciado).' : 'Listo con sonido.');
-      }, { once: true });
-
-      if (autoplay) {
-        try {
-          // Aquí integramos tu intención de: document.getElementById('meuAudio').play();
-          await audio.play();
-          setStatus(audio.muted ? 'Reproduciendo (silenciado)…' : 'Reproduciendo con sonido ✅');
-        } catch (e) {
-          setStatus('Autoplay bloqueado hasta interacción del usuario.');
-        }
-      }
-      renderPlaylist(index);
-      // Al cargar una pista nueva, reinicia la letra
-      updateLyricsDisplay(0);
-    }
-
-    // ======= Carga de duraciones de cada música =======
-    function preloadDurations() {
-      tracks.forEach((t, i) => {
-        if (isFinite(t.duration)) return;
-        const candidates = [...t.sources];
-        const aux = new Audio(); aux.preload = 'metadata';
-
-        const tryNext = () => {
-          const src = candidates.shift();
-          if (!src) { renderPlaylist(getActiveIndex()); return; }
-          aux.src = src;
-          const onMeta = () => {
-            cleanup(); t.duration = aux.duration; if (!t.resolvedSrc) t.resolvedSrc = src;
-            renderPlaylist(getActiveIndex());
-          };
-          const onError = () => { cleanup(); tryNext(); };
-          function cleanup(){
-            aux.removeEventListener('loadedmetadata', onMeta);
-            aux.removeEventListener('error', onError);
-          }
-          aux.addEventListener('loadedmetadata', onMeta);
-          aux.addEventListener('error', onError);
-          aux.load();
-        };
-        tryNext();
-      });
-    }
-
-    function getActiveIndex() {
-      const active = playlistEl.querySelector('.track.active');
-      if (!active) return 0; return Number(active.dataset.index) || 0;
-    }
-
-    // ======= Controles =======
-    unmuteBtn.addEventListener('click', async () => {
-      audio.muted = false;
-      try { await audio.play(); setStatus('Reproduciendo con sonido ✅'); }
-      catch (e) { setStatus('No se pudo iniciar la reproducción.'); }
+    // Sincronizar con el tiempo del audio
+    audio.addEventListener('timeupdate', () => {
+      updateLyric(audio.currentTime * 1000);
     });
+    audio.addEventListener('seeking', () => updateLyric(audio.currentTime * 1000));
+    audio.addEventListener('seeked',  () => updateLyric(audio.currentTime * 1000));
+    audio.addEventListener('ended',   () => updateLyric(totalLyricsMs));
 
-    playPauseBtn.addEventListener('click', async () => {
-      try {
-        if (audio.paused) {
-          await audio.play();
-          setStatus(audio.muted ? 'Reproduciendo (silenciado)…' : 'Reproduciendo con sonido ✅');
-        } else {
-          audio.pause();
-          setStatus('Pausado ⏸️');
-        }
-      } catch (e) { setStatus('No se pudo cambiar el estado de reproducción.'); }
-    });
-
-    muteToggleBtn.addEventListener('click', () => {
-      audio.muted = !audio.muted;
-      setStatus(audio.muted ? 'Silenciado 🤫' : 'Con sonido 🔊');
-    });
-
-    // ======= Progreso y tiempos =======
-    function updateTotals() {
-      const d = audio.duration;
-      totMMSS.textContent = toMMSS(d);
-      totS.textContent = isFinite(d) ? Math.round(d) : 0;
-    }
-    function updateCurrent() {
-      const t = audio.currentTime, d = audio.duration;
-      curMMSS.textContent = toMMSS(t);
-      curS.textContent = Math.round(t);
-      const pct = isFinite(d) && d > 0 ? (t / d) : 0;
-      bar.style.width = (clamp01(pct) * 100).toFixed(2) + '%';
-
-      // Actualiza la letra según el tiempo actual del audio
-      updateLyricsDisplay(t * 1000);
-    }
-
-    audio.addEventListener('timeupdate', updateCurrent);
-    audio.addEventListener('loadedmetadata', () => { updateTotals(); updateCurrent(); });
-
-    // ======= Desbloqueo por interacción (autoplay policies) =======
-    async function startOnce() {
-      audio.muted = false;
-      try { await audio.play(); setStatus('Reproduciendo con sonido ✅'); }
-      catch { /* ignorar; el usuario puede usar los botones */ }
-      window.removeEventListener('click', startOnce);
-      window.removeEventListener('keydown', startOnce);
-      window.removeEventListener('touchstart', startOnce);
-    }
-    window.addEventListener('click', startOnce, { once: true });
-    window.addEventListener('keydown', startOnce, { once: true });
-    window.addEventListener('touchstart', startOnce, { once: true });
-
-    // Si el usuario hace seek o vuelve a 0, re-calculamos la línea
-    audio.addEventListener('seeking', () => updateLyricsDisplay(audio.currentTime * 1000));
-    audio.addEventListener('seeked',  () => updateLyricsDisplay(audio.currentTime * 1000));
-    audio.addEventListener('ended',   () => updateLyricsDisplay(totalLyricsMs));
-
-    // ======= Inicio =======
-    (async function init() {
-      renderPlaylist(0);
-      preloadDurations();
-      await loadTrack(0, /*autoplay*/ true);
-    })();
+    // Al cargar, mostrar la primera frase
+    updateLyric(0);
   </script>
 </body>
 </html>
