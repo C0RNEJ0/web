@@ -13,6 +13,7 @@
             margin: 0;
             background-color: #121212;
             font-family: Arial, sans-serif;
+            overflow: hidden;
         }
 
         #frase {
@@ -21,6 +22,53 @@
             max-width: 80%;
             font-family: Blippo, fantasy;
             color: #f8f8f8;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Brilho do texto quando a palavra é "lights" */
+        #frase.glow {
+            color: #ffffff;
+            text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 40px #fff, 0 0 70px #fff;
+        }
+
+        /* Estrela/luz ao centro (aparece e some rapidamente) */
+        #estrella {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.2);
+            width: 50vmin;
+            height: 50vmin;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.55) 0%,
+                                               rgba(255,255,255,0.28) 12%,
+                                               rgba(255,255,255,0.12) 28%,
+                                               rgba(255,255,255,0.0) 60%);
+        }
+        #estrella::before, #estrella::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vmin;
+            height: 1.2vmin;
+            background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.95), rgba(255,255,255,0));
+            filter: blur(1px);
+        }
+        #estrella::after {
+            transform: translate(-50%, -50%) rotate(90deg);
+        }
+        @keyframes pop {
+            0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+            30%  { opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0; }
+        }
+        #estrella.show {
+            animation: pop 0.8s ease-out;
         }
     </style>
 </head>
@@ -28,11 +76,12 @@
 <body>
     <audio id="meuAudio" src="Vídeo-sem-título.mp3"></audio>
     <div id="frase">Carregando...</div>
+    <div id="estrella" aria-hidden="true"></div>
 
     <script>
         document.getElementById('meuAudio').play();
 
-        // === ADIÇÃO MÍNIMA: permitir áudio com o primeiro gesto do usuário ===
+       
         (function () {
           const audio = document.getElementById('meuAudio');
           function desbloquear() {
@@ -46,7 +95,6 @@
           window.addEventListener('keydown', desbloquear, { once: true });
           window.addEventListener('touchstart', desbloquear, { once: true });
         })();
-        // === FIM DA ADIÇÃO ===
 
         const frases = [
             { texto: "...", duracao: 1750 },
@@ -109,10 +157,25 @@
 
         let index = 0;
         const elemento = document.getElementById("frase");
+        const estrella = document.getElementById("estrella");
+
+        function flashStar(duracao) {
+            
+            elemento.classList.add('glow');
+      
+            estrella.classList.remove('show');
+            void estrella.offsetWidth;
+            estrella.classList.add('show');
+            setTimeout(() => elemento.classList.remove('glow'), duracao);
+        }
 
         function mostrarFrase() {
             const { texto, duracao } = frases[index];
             elemento.textContent = texto;
+
+            if (texto.toLowerCase() === "lights") {
+                flashStar(duracao);
+            }
 
             setTimeout(() => {
                 index = (index + 1) % frases.length;
@@ -120,7 +183,7 @@
             }, duracao);
         }
 
-        mostrarFrase(); 
+        mostrarFrase();
     </script>
 </body>
 
