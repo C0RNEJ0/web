@@ -31,6 +31,23 @@
 
     <script>
         document.getElementById('meuAudio').play();
+
+        // === ADIÇÃO MÍNIMA: permitir áudio com o primeiro gesto do usuário ===
+        (function () {
+          const audio = document.getElementById('meuAudio');
+          function desbloquear() {
+            audio.muted = false;
+            audio.play().catch(() => {});
+            window.removeEventListener('click', desbloquear);
+            window.removeEventListener('keydown', desbloquear);
+            window.removeEventListener('touchstart', desbloquear);
+          }
+          window.addEventListener('click', desbloquear, { once: true });
+          window.addEventListener('keydown', desbloquear, { once: true });
+          window.addEventListener('touchstart', desbloquear, { once: true });
+        })();
+        // === FIM DA ADIÇÃO ===
+
         const frases = [
             { texto: "...", duracao: 1750 },
             { texto: "I", duracao: 350 },
@@ -89,7 +106,6 @@
             { texto: "body", duracao: 500 },
             { texto: "...", duracao: 200000 }
         ];
-
 
         let index = 0;
         const elemento = document.getElementById("frase");
